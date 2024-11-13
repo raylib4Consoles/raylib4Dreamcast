@@ -1,3 +1,4 @@
+
 /*******************************************************************************************
 *
 *   raylib [shapes] example - Draw basic shapes 2d (rectangle, circle, line...)
@@ -11,59 +12,27 @@
 *
 ********************************************************************************************/
 
-#include <kos.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glkos.h>
 #include <raylib.h>
 
 #define ATTR_DREAMCAST_WIDTH 640
 #define ATTR_DREAMCAST_HEIGHT 480
-bool flag=true;
-bool xflag=false;
-maple_device_t *cont;
-cont_state_t *pad_state;
 
+static bool done = false;
 
-void updateController()
-{
-    cont = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
+static void updateController(void) {
+    bool startPressed;
 
-    if(cont)
-    {
-        pad_state = (cont_state_t *)maple_dev_status(cont);
+    if(!IsGamepadAvailable(0))
+        return;
 
-        if(!pad_state)
-        {
-            printf("Error reading controller\n");
-        }
+    startPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
 
-        if(pad_state->buttons & CONT_START)
-        {
-            flag=0;
-        }        
-        if(pad_state->buttons & CONT_A) 
-        {
-            xflag = !xflag;
-        }
-    }
+    if(startPressed)
+        done = true;
 }
 
-bool initApp()
-{
-    return true;
-}
-void finishApp()
-{
-    
-    
-}
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void)
-{
+int main(int argc, char** argv) {
+
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = ATTR_DREAMCAST_WIDTH;
@@ -73,21 +42,15 @@ int main(void)
     
     float rotation = 0.0f;
 
-   
-
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //----------------------------------------------------------
 
     // Main game loop
-    while (flag)    // Detect window close with Start button
-    {
-        // Update
-        //-----------------------------------------------------
+    while(!done) {    // Detect window close with Start button
+
         updateController();
 
-         //----------------------------------------------------------------------------------
         rotation += 0.2f;
-        //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -125,8 +88,6 @@ int main(void)
             // this way, all LINES are rendered in a single draw pass
             //DrawLine(18, 42, screenWidth - 18, 42, BLACK); //not supported on Dreamcast
         EndDrawing();
-
-    
         //-----------------------------------------------------
     }
 
@@ -135,6 +96,5 @@ int main(void)
     CloseWindow();        // Close window and OpenGL context
     //----------------------------------------------------------
     
-    finishApp();
     return 0;
 }
