@@ -1,12 +1,12 @@
 #
-# KallistiGL test program
-# (c)2013-2014 Josh PH3NOM Pearson
-# (c)2001 Megan Potter
-#   
+# Collision area Raylib program
+# Copyright (C) 2024
+#
 
-TARGET = raylib.elf
-OBJS = main.o romdisk.o
-KOS_ROMDISK_DIR = romdisk
+TARGET = collision.elf
+OBJS = collision.o
+
+KOS_CFLAGS += -I${KOS_PORTS}/include/raylib
 
 all: rm-elf $(TARGET)
 
@@ -16,15 +16,15 @@ clean: rm-elf
 	-rm -f $(OBJS)
 
 rm-elf:
-	-rm -f $(TARGET) romdisk.*
+	-rm -f $(TARGET)
 
 $(TARGET): $(OBJS)
-	kos-cc -o $(TARGET) $(OBJS) -lraylib -lGL -lm -lkosutils 
+	kos-cc -o $(TARGET) $(OBJS) -lraylib -lGL -lkosutils 
 
 run: $(TARGET)
 	$(KOS_LOADER) $(TARGET)
 
 dist: $(TARGET)
-	-rm -f $(OBJS) romdisk.img
+	-rm -f $(OBJS)
 	$(KOS_STRIP) $(TARGET)
 

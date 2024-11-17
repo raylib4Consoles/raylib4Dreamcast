@@ -1,3 +1,4 @@
+
 /*******************************************************************************************
 *
 *   raylib [shapes] example - collision area
@@ -11,83 +12,56 @@
 *
 ********************************************************************************************/
 
-#include <kos.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glkos.h>
 #include <raylib.h>
 
 #define ATTR_DREAMCAST_WIDTH 640
 #define ATTR_DREAMCAST_HEIGHT 480
-bool flag=true;
-bool xflag=false;
-maple_device_t *cont;
-cont_state_t *pad_state;
-int x;
-int y;
 
-void updateController()
-{
-    cont = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
+static bool done = false;
+static bool paused = false;
 
-    if(cont)
-    {
-        pad_state = (cont_state_t *)maple_dev_status(cont);
+static int x;
+static int y;
 
-        if(!pad_state)
-        {
-            printf("Error reading controller\n");
-        }
+static void updateController(void) {
+    bool dpadLeftDown;
+    bool dpadRightDown;
+    bool dpadDownDown;
+    bool dpadUpDown;
+    bool startPressed;
+    bool aPressed;
 
-        if(pad_state->buttons & CONT_START)
-        {
-            flag=0;
-        }
+    if(!IsGamepadAvailable(0))
+        return;
 
-        if(pad_state->buttons & CONT_DPAD_UP)
-        {
-            y=y-10;
-        }
+    dpadLeftDown = IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+    dpadRightDown = IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+    dpadDownDown = IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+    dpadUpDown = IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_UP);
+    startPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+    aPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
 
-        if(pad_state->buttons & CONT_DPAD_DOWN)
-        {
-            y=y+10;
-        }
+    if(startPressed)
+        done = true;
 
-        if(pad_state->buttons & CONT_DPAD_RIGHT)
-        {
-            x=x+10;
-        }
+    if(dpadUpDown)
+        y = y - 10;
 
-        if(pad_state->buttons & CONT_DPAD_LEFT)
-        {
-            x=x-10;
-        }
+    if(dpadDownDown)
+        y = y + 10;
 
+    if(dpadRightDown)
+        x = x + 10;
 
-        
-        if(pad_state->buttons & CONT_A) 
-        {
-            xflag = !xflag;
-        }
-    }
-}
-
-bool initApp()
-{
-    return true;
-}
-void finishApp()
-{
+    if(dpadLeftDown)
+        x = x - 10;
     
-    
+    if(aPressed) 
+        paused = !paused;
 }
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void)
-{
+
+int main(int argc, char** argv) {
+
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = ATTR_DREAMCAST_WIDTH;
@@ -95,57 +69,60 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "raylib [shapes] example - raylib collision area");
     
-
     // Box A: Moving box
     Rectangle boxA = { 10, GetScreenHeight()/2.0f - 50, 200, 100 };
     int boxASpeedX = 4;
 
     // Box B: Mouse moved box
    
-    x=screenWidth/2;
-    y=screenHeight/2;
+    x = screenWidth/2;
+    y = screenHeight/2;
 
     Rectangle boxCollision = { 0 }; // Collision rectangle
-    Rectangle boxB= { GetScreenWidth()/2.0f - 30, GetScreenHeight()/2.0f - 30, 60, 60 };
+    Rectangle boxB = { GetScreenWidth()/2.0f - 30, GetScreenHeight()/2.0f - 30, 60, 60 };
 
     int screenUpperLimit = 40;      // Top menu limits
 
-    
     bool collision = false;         // Collision detection
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //----------------------------------------------------------
 
     // Main game loop
-    while (flag)    // Detect window close button or ESC key
-    {
+    while(!done) {    // Detect window close button or ESC key
         // Update
         //-----------------------------------------------------
         updateController();
 
-
         // Move box if not paused
-        if (!xflag) boxA.x += boxASpeedX;
+        if(!paused) 
+            boxA.x += boxASpeedX;
 
         // Bounce box on x screen limits
-        if (((boxA.x + boxA.width) >= GetScreenWidth()) || (boxA.x <= 0)) boxASpeedX *= -1;
+        if(((boxA.x + boxA.width) >= GetScreenWidth()) || (boxA.x <= 0)) 
+            boxASpeedX *= -1;
 
         // Update player-controlled-box (box02)
         boxB.x = x - boxB.width/2;
         boxB.y = y - boxB.height/2;
 
         // Make sure Box B does not go out of move area limits
-        if ((boxB.x + boxB.width) >= GetScreenWidth()) boxB.x = GetScreenWidth() - boxB.width;
-        else if (boxB.x <= 0) boxB.x = 0;
+        if((boxB.x + boxB.width) >= GetScreenWidth()) 
+            boxB.x = GetScreenWidth() - boxB.width;
+        else if(boxB.x <= 0) 
+            boxB.x = 0;
 
-        if ((boxB.y + boxB.height) >= GetScreenHeight()) boxB.y = GetScreenHeight() - boxB.height;
-        else if (boxB.y <= screenUpperLimit) boxB.y = (float)screenUpperLimit;
+        if ((boxB.y + boxB.height) >= GetScreenHeight()) 
+            boxB.y = GetScreenHeight() - boxB.height;
+        else if(boxB.y <= screenUpperLimit) 
+            boxB.y = (float)screenUpperLimit;
 
         // Check boxes collision
         collision = CheckCollisionRecs(boxA, boxB);
 
         // Get collision rectangle (only on collision)
-        if (collision) boxCollision = GetCollisionRec(boxA, boxB);
+        if(collision) 
+            boxCollision = GetCollisionRec(boxA, boxB);
 
         //-----------------------------------------------------
 
@@ -160,8 +137,7 @@ int main(void)
             DrawRectangleRec(boxA, GOLD);
             DrawRectangleRec(boxB, BLUE);
 
-            if (collision)
-            {
+            if(collision) {
                 // Draw collision area
                 DrawRectangleRec(boxCollision, LIME);
 
@@ -185,7 +161,6 @@ int main(void)
     //---------------------------------------------------------
     CloseWindow();        // Close window and OpenGL context
     //----------------------------------------------------------
-    
-    finishApp();
+
     return 0;
 }

@@ -1,3 +1,4 @@
+
 /*******************************************************************************************
 *
 *   raylib [models] example - Cubicmap loading and drawing
@@ -11,60 +12,27 @@
 *
 ********************************************************************************************/
 
-
-#include <kos.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glkos.h>
 #include <raylib.h>
 
 #define ATTR_ORBIS_WIDTH 640
 #define ATTR_ORBIS_HEIGHT 480
-bool flag=true;
-bool xflag=false;
-maple_device_t *cont;
-cont_state_t *pad_state;
 
+static bool done = false;
 
-void updateController()
-{
-    cont = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
+static void updateController(void) {
+    bool startPressed;
 
-    if(cont)
-    {
-        pad_state = (cont_state_t *)maple_dev_status(cont);
+    if(!IsGamepadAvailable(0))
+        return;
 
-        if(!pad_state)
-        {
-            printf("Error reading controller\n");
-        }
+    startPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
 
-        if(pad_state->buttons & CONT_START)
-        {
-            flag=0;
-        }        
-        if(pad_state->buttons & CONT_A) 
-        {
-            xflag = !xflag;
-        }
-    }
+    if(startPressed)
+        done = true;
 }
 
-bool initApp()
-{
-    return true;
-}
-void finishApp()
-{
-    
-    
-}
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void)
-{
+int main(int argc, char** argv) {
+
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = ATTR_ORBIS_WIDTH;
@@ -80,36 +48,29 @@ int main(void)
     camera.fovy = 45.0f;                                    // Camera field-of-view Y
     camera.projection = CAMERA_PERSPECTIVE;                 // Camera projection type
 
-    Image image = LoadImage("/rd/cubicmap.png");      // Load cubicmap image (RAM)
+    Image image = LoadImage("/rd/cubicmap.png");            // Load cubicmap image (RAM)
     Texture2D cubicmap = LoadTextureFromImage(image);       // Convert image to texture to display (VRAM)
 
     Mesh mesh = GenMeshCubicmap(image, (Vector3){ 1.0f, 1.0f, 1.0f });
     Model model = LoadModelFromMesh(mesh);
 
     // NOTE: By default each cube is mapped to one part of texture atlas
-    Texture2D texture = LoadTexture("/rd/cubicmap_atlas.png");    // Load map texture
-    model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;    // Set map diffuse texture
+    Texture2D texture = LoadTexture("/rd/cubicmap_atlas.png");         // Load map texture
+    model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = texture;   // Set map diffuse texture
 
-    Vector3 mapPosition = { -16.0f, 0.0f, -8.0f };          // Set model position
+    Vector3 mapPosition = { -16.0f, 0.0f, -8.0f };    // Set model position
 
     UnloadImage(image);     // Unload cubesmap image from RAM, already uploaded to VRAM
 
-   
-
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    SetTargetFPS(60);     // Set our game to run at 60 frames-per-second
     //----------------------------------------------------------
 
     // Main game loop
-    while (flag)    // Detect window close button or ESC key
-    {
-        // Update
-        //-----------------------------------------------------
+    while(!done) {
+
         updateController();
 
-        // Update
-        //----------------------------------------------------------------------------------
         UpdateCamera(&camera, CAMERA_ORBITAL);
-        //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
@@ -132,8 +93,6 @@ int main(void)
             DrawFPS(10, 10);
 
         EndDrawing();
-
-    
         //-----------------------------------------------------
     }
 
@@ -143,10 +102,9 @@ int main(void)
     UnloadTexture(texture);     // Unload map texture
     UnloadModel(model);         // Unload map model
  
-    CloseWindow();        // Close window and OpenGL context
+    CloseWindow();     // Close window and OpenGL context
     //----------------------------------------------------------
-    
-    finishApp();
+
     return 0;
 }
 

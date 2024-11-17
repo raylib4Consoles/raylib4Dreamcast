@@ -1,3 +1,4 @@
+
 /*******************************************************************************************
 *
 *   raylib [shapes] example - raylib logo animation
@@ -11,71 +12,40 @@
 *
 ********************************************************************************************/
 
-#include <kos.h>
-
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glkos.h>
 #include <raylib.h>
 
 #define ATTR_DREAMCAST_WIDTH 640
 #define ATTR_DREAMCAST_HEIGHT 480
-bool flag=true;
-bool l1flag=false;
-bool r1flag=false;
-int xflag;
-maple_device_t *cont;
-cont_state_t *pad_state;
-void updateController()
-{
-    cont = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
 
-    if(cont)
-    {
-        pad_state = (cont_state_t *)maple_dev_status(cont);
+static bool done = false;
+static bool restart = false;
 
-        if(!pad_state)
-        {
-            printf("Error reading controller\n");
-        }
+static void updateController(void) {
+    bool startPressed;
+    bool aPressed;
 
-        if(pad_state->buttons & CONT_START)
-        {
-            flag=0;
-        }
+    if(!IsGamepadAvailable(0))
+        return;
 
-        
-        if(pad_state->buttons & CONT_A) 
-        {
-             xflag=1;
-        }
-    }
+    startPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+    aPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+
+    if(startPressed)
+        done = true;
+
+    if(aPressed) 
+        restart = true;
 }
 
-bool initApp()
-{
-    return true;
-}
-void finishApp()
-{
-    
-    
-}
-extern GLuint glTextureLoadPVR(char *fname, unsigned char isMipMapped, unsigned char glMipMap);
+int main(int argc, char** argv) {
 
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
-int main(void)
-{
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = ATTR_DREAMCAST_WIDTH;
     const int screenHeight = ATTR_DREAMCAST_HEIGHT;
 
     InitWindow(screenWidth, screenHeight, "raylib [shapes] example - raylib logo animation");
-    //TRACELOG(LOG_INFO, "PLATFORM: calling dreamcast gl init");
-    //glKosInit();
+
     int logoPositionX = screenWidth/2 - 128;
     int logoPositionY = screenHeight/2 - 128;
 
@@ -90,70 +60,57 @@ int main(void)
 
     int state = 0;                  // Tracking animation states (State Machine)
     float alpha = 1.0f;             // Useful for fading
-
-    
   
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
-   
     // Main game loop
-    while (flag)    // Detect window close button or ESC key
-    {
+    while(!done) {    // Detect window close button or ESC key
         // Update
         //----------------------------------------------------------------------------------
         updateController();
 
-
-        if (state == 0)                 // State 0: Small box blinking
-        {
+        if(state == 0) {                // State 0: Small box blinking
             framesCounter++;
 
-            if (framesCounter == 120)
-            {
+            if(framesCounter == 120) {
                 state = 1;
                 framesCounter = 0;      // Reset counter... will be used later...
             }
         }
-        else if (state == 1)            // State 1: Top and left bars growing
-        {
+        else if(state == 1) {           // State 1: Top and left bars growing
             topSideRecWidth += 4;
             leftSideRecHeight += 4;
 
-            if (topSideRecWidth == 256) state = 2;
+            if(topSideRecWidth == 256) 
+                state = 2;
         }
-        else if (state == 2)            // State 2: Bottom and right bars growing
-        {
+        else if(state == 2) {          // State 2: Bottom and right bars growing
             bottomSideRecWidth += 4;
             rightSideRecHeight += 4;
 
-            if (bottomSideRecWidth == 256) state = 3;
+            if(bottomSideRecWidth == 256) 
+                state = 3;
         }
-        else if (state == 3)            // State 3: Letters appearing (one by one)
-        {
+        else if(state == 3) {           // State 3: Letters appearing (one by one)
             framesCounter++;
 
-            if (framesCounter/12)       // Every 12 frames, one more letter!
-            {
+            if(framesCounter/12) {      // Every 12 frames, one more letter!
                 lettersCount++;
                 framesCounter = 0;
             }
 
-            if (lettersCount >= 10)     // When all letters have appeared, just fade out everything
-            {
+            if(lettersCount >= 10) {    // When all letters have appeared, just fade out everything
                 alpha -= 0.02f;
 
-                if (alpha <= 0.0f)
-                {
+                if(alpha <= 0.0f) {
                     alpha = 0.0f;
                     state = 4;
                 }
             }
         }
-        else if (state == 4)            // State 4: Reset and Replay
-        {
-            if (xflag)
-            {
+        else if(state == 4) {           // State 4: Reset and Replay
+            if(restart) {
                 framesCounter = 0;
                 lettersCount = 0;
 
@@ -165,7 +122,7 @@ int main(void)
 
                 alpha = 1.0f;
                 state = 0;          // Return to State 0
-                xflag = 0;
+                restart = false;
             }
         }
 
@@ -176,25 +133,22 @@ int main(void)
         BeginDrawing();
             ClearBackground(RAYWHITE);
    
-            if (state == 0)
-            {
-                if ((framesCounter/15)%2) DrawRectangle(logoPositionX, logoPositionY, 16, 16, BLACK);
+            if(state == 0) {
+                if ((framesCounter/15)%2) 
+                    DrawRectangle(logoPositionX, logoPositionY, 16, 16, BLACK);
             }
-            else if (state == 1)
-            {
+            else if(state == 1) {
                 DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 16, BLACK);
                 DrawRectangle(logoPositionX, logoPositionY, 16, leftSideRecHeight, BLACK);
             }
-            else if (state == 2)
-            {
+            else if(state == 2) {
                 DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 16, BLACK);
                 DrawRectangle(logoPositionX, logoPositionY, 16, leftSideRecHeight, BLACK);
 
                 DrawRectangle(logoPositionX + 240, logoPositionY, 16, rightSideRecHeight, BLACK);
                 DrawRectangle(logoPositionX, logoPositionY + 240, bottomSideRecWidth, 16, BLACK);
             }
-            else if (state == 3)
-            {
+            else if(state == 3) {
                 DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 16, Fade(BLACK, alpha));
                 DrawRectangle(logoPositionX, logoPositionY + 16, 16, leftSideRecHeight - 32, Fade(BLACK, alpha));
 
@@ -204,8 +158,7 @@ int main(void)
                 DrawRectangle(GetScreenWidth()/2 - 112, GetScreenHeight()/2 - 112, 224, 224, Fade(RAYWHITE, alpha));
                 DrawText(TextSubtext("raylib", 0, lettersCount), GetScreenWidth()/2 - 44, GetScreenHeight()/2 + 48, 50, Fade(BLACK, alpha));
             }
-            else if (state == 4)
-            {
+            else if(state == 4) {
                 DrawText("powered by raylib4Dreamcast [A] REPLAY", screenWidth/2-200, screenHeight/2-38, 20, GRAY);
             }
         EndDrawing();
@@ -216,6 +169,6 @@ int main(void)
     //--------------------------------------------------------------------------------------
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
-    finishApp();
+
     return 0;
 }
