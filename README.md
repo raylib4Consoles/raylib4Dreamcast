@@ -16,6 +16,7 @@ Ready to learn? Jump to [code examples!](https://www.raylib.com/examples.html)
 
 Change log
 ===========================
+ - 22/4/2026 sync with raylib 6.0 add miniaudio support
  - 28/1/2024 Initial raylib4Dreamcast public release 
  
 
@@ -24,6 +25,7 @@ Change log
   
  - @raysan5 for his amazing work with raylib and raylib has an incredible community developing in the open way!!!! 
  - @falco_girgis guilty by call my attention about cool things done with Sega Dreamcast
+ - @mackron for miniaudio support
  - all people involved in homebrew tools and libraries for Dreamcast.
 
  
