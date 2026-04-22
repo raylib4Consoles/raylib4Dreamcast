@@ -7,5 +7,5 @@ if test ! $KOS_PORTS; then { echo "ERROR: Set \$KOS_PORTS installing kos sdk and
 
 git clone https://github.com/raylib4Consoles/raylib -b raylib4Consoles_6.0
 cd raylib/src
-make 
-make install
+make PLATFORM=PLATFORM_DREAMCAST
+make PLATFORM=PLATFORM_DREAMCAST install
